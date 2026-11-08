@@ -55,6 +55,6 @@ Example output (`python main.py methane 250 50 PR`):
 | `main.py` | command-line / menu interface |
 | `validate.py` | compares Z, H<sup>R</sup>, S<sup>R</sup>, φ and P<sup>sat</sup> with CoolProp (NIST-quality reference EOS) |
 | `make_plots.py` | figures used in the report |
-| `report/` | project report (`report.pdf`) and its LaTeX source (`report.tex`, editable on Overleaf) |
+| `report.pdf` | 4-page project report |
 
 `main.py` needs only NumPy. CoolProp and Matplotlib are needed only for validation and plots.
