@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cubic EOS Calculator</title>
+<meta name="description" content="PVT, enthalpy, entropy and fugacity of real gases using vdW, RK, SRK and Peng-Robinson cubic equations of state.">
+<style>
+  :root {
+    --bg: #f7f6f2; --card: #ffffff; --ink: #1b1b19; --ink2: #55544e; --muted: #8a897f;
+    --line: #e1e0d9; --axis: #c3c2b7; --accent: #2a78d6; --accent-ink: #ffffff;
+    --good: #006300; --warn: #9a5b00;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: #1b1b19; color: #fff; padding: 22px 16px; }
+  header .wrap, main, footer { max-width: 1100px; margin: 0 auto; }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; color: #c9c8c0; font-size: 14px; }
+  main { padding: 20px 16px; display: grid; gap: 18px; grid-template-columns: 320px minmax(0, 1fr); }
+  @media (max-width: 860px) { main { grid-template-columns: minmax(0, 1fr); } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 16px; }
+  label { display: block; font-size: 13px; color: var(--ink2); margin: 10px 0 4px; }
+  select, input { width: 100%; padding: 8px 10px; font: inherit; border: 1px solid var(--axis);
+                  border-radius: 6px; background: #fff; color: var(--ink); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  button { margin-top: 14px; width: 100%; padding: 10px; font: inherit; font-weight: 600; cursor: pointer;
+           border: 0; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
+  button.secondary { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .right { display: grid; gap: 18px; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .kv b { overflow-wrap: anywhere; }
+  .kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .kv div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .kv span { display: block; font-size: 12px; color: var(--muted); }
+  .kv b { font-size: 17px; font-variant-numeric: tabular-nums; }
+  .group { font-size: 12px; font-weight: 600; color: var(--ink2); text-transform: uppercase;
+           letter-spacing: .04em; margin: 14px 0 6px; }
+  .group:first-child { margin-top: 0; }
+  .note { font-size: 13px; color: var(--ink2); margin-top: 10px; }
+  .msg { padding: 8px 10px; border-radius: 6px; background: #fff4e0; color: var(--warn); font-size: 13px; margin-top: 10px; }
+  .msg.ok { background: #e8f5e8; color: var(--good); }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--ink2); font-weight: 600; font-size: 13px; }
+  tr.sel td { background: #eef4fc; font-weight: 600; }
+  .chartbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 10px; }
+  .chartbar label { margin: 0 0 4px; }
+  .chartbar > div { min-width: 140px; }
+  .chartbox { position: relative; height: 340px; }
+  .chartbox svg { width: 100%; height: 100%; display: block; }
+  .chartbox text { font-size: 11px; fill: var(--ink2); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; margin-bottom: 6px; }
+  .legend i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  .tip { position: absolute; pointer-events: none; background: #1b1b19; color: #fff; font-size: 12px; padding: 6px 8px;
+         border-radius: 6px; display: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  details { font-size: 14px; }
+  details summary { cursor: pointer; font-weight: 600; }
+  code { background: #f0efe9; padding: 1px 4px; border-radius: 4px; }
+  footer { padding: 6px 16px 30px; font-size: 13px; color: var(--muted); }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Cubic Equation of State Calculator</h1>
+    <p>PVT behaviour, enthalpy, entropy and fugacity of real gases &middot; CHL2002 Computer Project &middot;
+       Krishna Kumar (2025CH72107), Tutorial Group 02</p>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Inputs</h2>
+    <label for="gas">Gas</label>
+    <select id="gas"></select>
+    <div class="row2">
+      <div><label for="T">Temperature (K)</label><input id="T" type="number" value="250" step="any" min="1"></div>
+      <div><label for="P">Pressure (bar)</label><input id="P" type="number" value="50" step="any" min="0.001"></div>
+    </div>
+    <label for="eos">Equation of state</label>
+    <select id="eos">
+      <option value="PR" selected>Peng&ndash;Robinson (PR)</option>
+      <option value="SRK">Soave&ndash;Redlich&ndash;Kwong (SRK)</option>
+      <option value="RK">Redlich&ndash;Kwong (RK)</option>
+      <option value="vdW">van der Waals (vdW)</option>
+    </select>
+    <label for="phase">Root / phase</label>
+    <select id="phase">
+      <option value="auto" selected>Auto (stable phase, lowest &phi;)</option>
+      <option value="vapor">Vapour (largest Z)</option>
+      <option value="liquid">Liquid (smallest Z)</option>
+    </select>
+    <button id="calc">Calculate</button>
+    <button id="psatBtn" class="secondary">Find saturation pressure at T</button>
+    <div id="psatOut"></div>
+    <div class="hint" id="crit"></div>
+  </section>
+
+  <div class="right">
+    <section class="card">
+      <h2 id="resTitle">Results</h2>
+      <div id="msg"></div>
+      <div class="group">PVT</div>
+      <div class="kv" id="kvPVT"></div>
+      <div class="group">Enthalpy and entropy (reference: ideal gas, 298.15 K, 1 bar)</div>
+      <div class="kv" id="kvHS"></div>
+      <div class="group">Fugacity</div>
+      <div class="kv" id="kvF"></div>
+      <div class="group">EOS constants</div>
+      <div class="kv" id="kvC"></div>
+    </section>
+
+    <section class="card">
+      <h2>All four equations of state at this T and P</h2>
+      <div class="tablewrap"><table id="cmp"></table></div>
+    </section>
+
+    <section class="card">
+      <h2>Isotherm plot</h2>
+      <div class="chartbar">
+        <div><label for="prop">Property</label>
+          <select id="prop">
+            <option value="Z">Compressibility factor Z</option>
+            <option value="HR">Residual enthalpy H&#7472; (kJ/mol)</option>
+            <option value="SR">Residual entropy S&#7472; (J/mol K)</option>
+            <option value="phi">Fugacity coefficient &phi;</option>
+            <option value="f">Fugacity f (bar)</option>
+          </select></div>
+        <div><label for="pmax">Max pressure (bar)</label><input id="pmax" type="number" value="200" min="1" step="any"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="chartbox" id="chartbox"><svg id="chart" role="img" aria-label="Property versus pressure for four EOS"></svg><div class="tip" id="tip"></div></div>
+      <p class="note">Curves use the same gas and temperature as the inputs; the dot marks the current pressure.</p>
+    </section>
+
+    <section class="card">
+      <details>
+        <summary>Equations used</summary>
+        <p>Generic cubic EOS: <code>P = RT/(V&minus;b) &minus; a(T)/[(V+&epsilon;b)(V+&sigma;b)]</code>,
+           with <code>a = &Psi;&alpha;(T<sub>r</sub>,&omega;)R&sup2;T<sub>c</sub>&sup2;/P<sub>c</sub></code>,
+           <code>b = &Omega;RT<sub>c</sub>/P<sub>c</sub></code>.</p>
+        <p>With <code>&beta; = bP/RT</code>, <code>q = a/(bRT)</code>:
+           <code>(Z&minus;&beta;)(Z+&epsilon;&beta;)(Z+&sigma;&beta;) &minus; (Z+&epsilon;&beta;)(Z+&sigma;&beta;) + q&beta;(Z&minus;&beta;) = 0</code>.
+           Real roots with Z &gt; &beta; are kept.</p>
+        <p><code>I = ln[(Z+&sigma;&beta;)/(Z+&epsilon;&beta;)]/(&sigma;&minus;&epsilon;)</code> (I = &beta;/Z for vdW)<br>
+           <code>H<sup>R</sup>/RT = Z &minus; 1 + (dln&alpha;/dlnT<sub>r</sub> &minus; 1)qI</code><br>
+           <code>S<sup>R</sup>/R = ln(Z&minus;&beta;) + (dln&alpha;/dlnT<sub>r</sub>)qI</code><br>
+           <code>ln&phi; = Z &minus; 1 &minus; ln(Z&minus;&beta;) &minus; qI</code>, &nbsp; <code>f = &phi;P</code></p>
+        <p><code>H = &int;C<sub>P</sub><sup>ig</sup>dT + H<sup>R</sup></code>, &nbsp;
+           <code>S = &int;(C<sub>P</sub><sup>ig</sup>/T)dT &minus; R ln(P/P<sub>0</sub>) + S<sup>R</sup></code>,
+           with <code>C<sub>P</sub><sup>ig</sup>/R = A + BT + CT&sup2; + DT<sup>&minus;2</sup></code> (Smith, Van Ness &amp; Abbott, App. C).</p>
+        <p>Saturation pressure: iterate <code>P &larr; P&middot;&phi;<sup>L</sup>/&phi;<sup>V</sup></code> until f<sup>L</sup> = f<sup>V</sup>.</p>
+      </details>
+    </section>
+  </div>
+</main>
+
+<footer>
+  Full derivation, validation against NIST-quality reference data and discussion: <a href="report.pdf">project report (PDF)</a>.
+  Python source: <code>main.py</code>, <code>eos.py</code>, <code>data.py</code> in this repository.
+</footer>
+
+<script id="engine">
+/* ===================== Cubic EOS engine (JavaScript port of eos.py) ===================== */
+const R = 8.314462618;           // J/(mol K)
+const T0 = 298.15, P0 = 1e5;     // reference state
+const SQRT2 = Math.sqrt(2);
+
+// name: [Tc K, Pc bar, omega, A, B, C, D]   (SVNA App. B, C)
+const COMPONENTS = {
+  "methane":        [190.6,  45.99, 0.012, 1.702, 9.081e-3, -2.164e-6, 0.0],
+  "ethane":         [305.3,  48.72, 0.100, 1.131, 19.225e-3, -5.561e-6, 0.0],
+  "propane":        [369.8,  42.48, 0.152, 1.213, 28.785e-3, -8.824e-6, 0.0],
+  "n-butane":       [425.1,  37.96, 0.200, 1.935, 36.915e-3, -11.402e-6, 0.0],
+  "nitrogen":       [126.2,  34.00, 0.038, 3.280, 0.593e-3, 0.0, 0.040e5],
+  "oxygen":         [154.6,  50.43, 0.022, 3.639, 0.506e-3, 0.0, -0.227e5],
+  "carbon dioxide": [304.2,  73.83, 0.224, 5.457, 1.045e-3, 0.0, -1.157e5],
+  "ammonia":        [405.7, 112.80, 0.253, 3.578, 3.020e-3, 0.0, -0.186e5],
+  "water":          [647.1, 220.55, 0.345, 3.470, 1.450e-3, 0.0, 0.121e5],
+};
+
+//            sigma        eps          Omega    Psi
+const EOS_PARAMS = {
+  vdW: [0,          0,          1 / 8,   27 / 64],
+  RK:  [1,          0,          0.08664, 0.42748],
+  SRK: [1,          0,          0.08664, 0.42748],
+  PR:  [1 + SQRT2,  1 - SQRT2,  0.07780, 0.45724],
+};
+
+function getComponent(name) {
+  const [Tc, Pc, w, A, B, C, D] = COMPONENTS[name];
+  return { name, Tc, Pc: Pc * 1e5, omega: w, cp: [A, B, C, D] };
+}
+
+function alphaFunction(eos, Tr, w) {
+  if (eos === "vdW") return [1, 0];
+  if (eos === "RK") return [Math.pow(Tr, -0.5), -0.5];
+  const m = eos === "SRK" ? 0.480 + 1.574 * w - 0.176 * w * w
+                          : 0.37464 + 1.54226 * w - 0.26992 * w * w;
+  const s = 1 + m * (1 - Math.sqrt(Tr));
+  return [s * s, -m * Math.sqrt(Tr) / s];
+}
+
+function eosConstants(comp, T, eos) {
+  const [, , Omega, Psi] = EOS_PARAMS[eos];
+  const [alpha, dlna] = alphaFunction(eos, T / comp.Tc, comp.omega);
+  const a = Psi * alpha * R * R * comp.Tc * comp.Tc / comp.Pc;
+  const b = Omega * R * comp.Tc / comp.Pc;
+  return { a, b, dlna };
+}
+
+// Real roots of x^3 + c2 x^2 + c1 x + c0 (Cardano / trigonometric), polished by Newton
+function cubicRealRoots(c2, c1, c0) {
+  const p = c1 - c2 * c2 / 3;
+  const q = 2 * c2 * c2 * c2 / 27 - c2 * c1 / 3 + c0;
+  const disc = q * q / 4 + p * p * p / 27;
+  let t = [];
+  if (disc > 0) {
+    const s = Math.sqrt(disc);
+    t = [Math.cbrt(-q / 2 + s) + Math.cbrt(-q / 2 - s)];
+  } else if (p === 0) {
+    t = [0];
+  } else {
+    const r = 2 * Math.sqrt(-p / 3);
+    const th = Math.acos(Math.max(-1, Math.min(1, 3 * q / (p * r))));
+    for (let k = 0; k < 3; k++) t.push(r * Math.cos((th - 2 * Math.PI * k) / 3));
+  }
+  return t.map(ti => {
+    let x = ti - c2 / 3;
+    for (let i = 0; i < 20; i++) {
+      const f = ((x + c2) * x + c1) * x + c0, d = (3 * x + 2 * c2) * x + c1;
+      if (d === 0) break;
+      const dx = f / d; x -= dx;
+      if (Math.abs(dx) < 1e-15 * Math.max(1, Math.abs(x))) break;
+    }
+    return x;
+  });
+}
+
+// (Z-β)(Z+εβ)(Z+σβ) − (Z+εβ)(Z+σβ) + qβ(Z−β) = 0, expanded
+function zRoots(beta, q, eos) {
+  const [sig, eps] = EOS_PARAMS[eos];
+  const s = sig + eps, p = sig * eps;
+  const c2 = (s - 1) * beta - 1;
+  const c1 = (p - s) * beta * beta - s * beta + q * beta;
+  const c0 = -p * beta ** 3 - p * beta * beta - q * beta * beta;
+  const roots = cubicRealRoots(c2, c1, c0).filter(z => z > beta).sort((a, b) => a - b);
+  const uniq = [];
+  for (const z of roots) if (!uniq.length || Math.abs(z - uniq[uniq.length - 1]) > 1e-9) uniq.push(z);
+  return uniq;
+}
+
+function Iint(Z, beta, eos) {
+  const [sig, eps] = EOS_PARAMS[eos];
+  if (sig === eps) return beta / (Z + eps * beta);
+  return Math.log((Z + sig * beta) / (Z + eps * beta)) / (sig - eps);
+}
+
+function lnPhi(Z, beta, q, eos) { return Z - 1 - Math.log(Z - beta) - q * Iint(Z, beta, eos); }
+
+function idealH(comp, T) {
+  const [A, B, C, D] = comp.cp;
+  return R * (A * (T - T0) + B / 2 * (T * T - T0 * T0) + C / 3 * (T ** 3 - T0 ** 3) - D * (1 / T - 1 / T0));
+}
+function idealS(comp, T, P) {
+  const [A, B, C, D] = comp.cp;
+  return R * (A * Math.log(T / T0) + B * (T - T0) + C / 2 * (T * T - T0 * T0) - D / 2 * (1 / (T * T) - 1 / (T0 * T0)))
+         - R * Math.log(P / P0);
+}
+
+function state(gas, T, P, eos = "PR", phase = "auto") {
+  const comp = typeof gas === "string" ? getComponent(gas) : gas;
+  const { a, b, dlna } = eosConstants(comp, T, eos);
+  const beta = b * P / (R * T), q = a / (b * R * T);
+  const roots = zRoots(beta, q, eos);
+  if (!roots.length) throw new Error("No physical root found");
+  let Z;
+  if (phase === "vapor") Z = roots[roots.length - 1];
+  else if (phase === "liquid") Z = roots[0];
+  else if (roots.length === 1) Z = roots[0];
+  else {
+    const zl = roots[0], zv = roots[roots.length - 1];
+    Z = lnPhi(zl, beta, q, eos) < lnPhi(zv, beta, q, eos) ? zl : zv;
+  }
+  const I = Iint(Z, beta, eos);
+  const HR = (Z - 1 + (dlna - 1) * q * I) * R * T;
+  const SR = (Math.log(Z - beta) + dlna * q * I) * R;
+  const lnphi = Z - 1 - Math.log(Z - beta) - q * I;
+  const phi = Math.exp(lnphi);
+  return {
+    gas: comp.name, eos, T, P, Tr: T / comp.Tc, Pr: P / comp.Pc, a, b, A: q * beta, B: beta,
+    roots, Z, V: Z * R * T / P, HR, SR, H: idealH(comp, T) + HR, S: idealS(comp, T, P) + SR,
+    phi, f: phi * P,
+  };
+}
+
+function saturationPressure(gas, T, eos = "PR", tol = 1e-10, maxit = 500) {
+  const comp = typeof gas === "string" ? getComponent(gas) : gas;
+  if (T >= comp.Tc) throw new Error("T must be below Tc");
+  let P = comp.Pc * Math.exp(5.373 * (1 + comp.omega) * (1 - comp.Tc / T));   // Wilson estimate
+  for (let it = 0; it < maxit; it++) {
+    const { a, b } = eosConstants(comp, T, eos);
+    const beta = b * P / (R * T), q = a / (b * R * T);
+    const roots = zRoots(beta, q, eos);
+    if (roots.length < 2) { P *= roots[0] < 0.3 ? 0.9 : 1.1; continue; }
+    const ZL = roots[0], ZV = roots[roots.length - 1];
+    const Pnew = P * Math.exp(lnPhi(ZL, beta, q, eos)) / Math.exp(lnPhi(ZV, beta, q, eos));
+    if (Math.abs(Pnew / P - 1) < tol) return { Psat: Pnew, ZL, ZV };
+    P = Pnew;
+  }
+  throw new Error("Saturation pressure did not converge");
+}
+</script>
+
+<script>
+/* ===================== User interface ===================== */
+const $ = id => document.getElementById(id);
+const COLORS = { vdW: "#2a78d6", RK: "#eb6834", SRK: "#1baf7a", PR: "#e87ba4" };
+const NICE = n => n.replace(/\b\w/g, c => c.toUpperCase());
+
+for (const g of Object.keys(COMPONENTS)) {
+  const o = document.createElement("option"); o.value = g; o.textContent = NICE(g); $("gas").appendChild(o);
+}
+
+const fmt = (x, d) => Number.isFinite(x) ? x.toFixed(d) : "—";
+const kv = (pairs) => pairs.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join("");
+
+function readInputs() {
+  const gas = $("gas").value, T = parseFloat($("T").value), Pbar = parseFloat($("P").value);
+  if (!(T > 0) || !(Pbar > 0)) throw new Error("Enter a positive temperature and pressure.");
+  return { gas, T, P: Pbar * 1e5, eos: $("eos").value, phase: $("phase").value };
+}
+
+function showCrit() {
+  const c = getComponent($("gas").value);
+  $("crit").textContent = `Tc = ${c.Tc} K, Pc = ${(c.Pc / 1e5).toFixed(2)} bar, ω = ${c.omega}`;
+}
+
+function calculate() {
+  $("msg").innerHTML = "";
+  let inp;
+  try { inp = readInputs(); } catch (e) { $("msg").innerHTML = `<div class="msg">${e.message}</div>`; return; }
+  const s = state(inp.gas, inp.T, inp.P, inp.eos, inp.phase);
+  $("resTitle").textContent = `Results — ${NICE(s.gas)}, ${s.eos}, ${fmt(s.T, 2)} K, ${fmt(s.P / 1e5, 3)} bar`;
+
+  $("kvPVT").innerHTML = kv([
+    ["Compressibility factor Z", fmt(s.Z, 5)],
+    ["Molar volume V (cm³/mol)", fmt(s.V * 1e6, 3)],
+    ["Reduced temperature Tr", fmt(s.Tr, 4)],
+    ["Reduced pressure Pr", fmt(s.Pr, 4)],
+  ]);
+  $("kvHS").innerHTML = kv([
+    ["Hᴿ departure (J/mol)", fmt(s.HR, 2)],
+    ["Sᴿ departure (J/mol K)", fmt(s.SR, 4)],
+    ["H (J/mol)", fmt(s.H, 2)],
+    ["S (J/mol K)", fmt(s.S, 4)],
+  ]);
+  $("kvF").innerHTML = kv([
+    ["Fugacity coefficient φ", fmt(s.phi, 5)],
+    ["Fugacity f (bar)", fmt(s.f / 1e5, 4)],
+  ]);
+  $("kvC").innerHTML = kv([
+    ["a (Pa m⁶/mol²)", s.a.toExponential(5)],
+    ["b (m³/mol)", s.b.toExponential(5)],
+    ["A = aP/(RT)²", fmt(s.A, 5)],
+    ["B = bP/RT", fmt(s.B, 5)],
+    ["Physical Z roots", s.roots.map(z => z.toFixed(5)).join(", ")],
+  ]);
+  if (s.roots.length > 1) {
+    const which = inp.phase === "auto" ? "the stable root (lower φ) was chosen" : `the ${inp.phase} root was chosen`;
+    $("msg").innerHTML = `<div class="msg">Two physical roots exist (liquid-like and vapour-like); ${which}.</div>`;
+  }
+
+  // comparison table
+  let rows = `<tr><th>EOS</th><th>Z</th><th>V (cm³/mol)</th><th>Hᴿ (J/mol)</th><th>Sᴿ (J/mol K)</th>
+              <th>H (J/mol)</th><th>S (J/mol K)</th><th>φ</th><th>f (bar)</th></tr>`;
+  for (const e of ["vdW", "RK", "SRK", "PR"]) {
+    const r = state(inp.gas, inp.T, inp.P, e, inp.phase);
+    rows += `<tr class="${e === inp.eos ? "sel" : ""}"><td>${e}</td><td>${fmt(r.Z, 5)}</td><td>${fmt(r.V * 1e6, 2)}</td>
+             <td>${fmt(r.HR, 1)}</td><td>${fmt(r.SR, 3)}</td><td>${fmt(r.H, 1)}</td><td>${fmt(r.S, 3)}</td>
+             <td>${fmt(r.phi, 4)}</td><td>${fmt(r.f / 1e5, 3)}</td></tr>`;
+  }
+  $("cmp").innerHTML = rows;
+  drawChart(inp);
+}
+
+let chartData = null;
+function drawChart(inp) {
+  const prop = $("prop").value;
+  const pmax = Math.max(parseFloat($("pmax").value) || 200, 1);
+  const scale = { Z: 1, HR: 1e-3, SR: 1, phi: 1, f: 1e-5 }[prop];
+  const N = 150, series = [];
+  for (const e of ["vdW", "RK", "SRK", "PR"]) {
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const Pb = 0.5 + (pmax - 0.5) * i / N;
+      try { pts.push([Pb, state(inp.gas, inp.T, Pb * 1e5, e, inp.phase)[prop] * scale]); } catch (_) {}
+    }
+    series.push({ e, pts });
+  }
+  const cur = state(inp.gas, inp.T, inp.P, inp.eos, inp.phase)[prop] * scale;
+  chartData = { series, prop, inp, cur, pmax };
+  renderChart();
+  $("legend").innerHTML = series.map(s => `<span><i style="background:${COLORS[s.e]};height:${s.e === inp.eos ? 4 : 2}px"></i>${s.e}${s.e === inp.eos ? " (selected)" : ""}</span>`).join("")
+    + `<span><i style="background:#1b1b19;width:9px;height:9px;border-radius:50%"></i>current P</span>`;
+}
+
+function niceTicks(lo, hi, n = 5) {
+  const span = hi - lo || Math.abs(hi) || 1, step0 = span / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= step0);
+  const t = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) t.push(+v.toPrecision(12));
+  return t;
+}
+
+function renderChart() {
+  if (!chartData) return;
+  const { series, inp, cur, pmax } = chartData;
+  const svg = $("chart"), W = svg.clientWidth || 600, H = svg.clientHeight || 340;
+  const m = { l: 58, r: 14, t: 10, b: 40 };
+  let ymin = Infinity, ymax = -Infinity;
+  for (const s of series) for (const [, y] of s.pts) { if (y < ymin) ymin = y; if (y > ymax) ymax = y; }
+  ymin = Math.min(ymin, cur); ymax = Math.max(ymax, cur);
+  const pad = (ymax - ymin) * 0.06 || 0.05; ymin -= pad; ymax += pad;
+  const X = x => m.l + (x / pmax) * (W - m.l - m.r);
+  const Y = y => H - m.b - (y - ymin) / (ymax - ymin) * (H - m.t - m.b);
+  let g = "";
+  for (const t of niceTicks(ymin, ymax)) {
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="#e1e0d9"/>
+          <text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end">${+t.toFixed(6)}</text>`;
+  }
+  for (const t of niceTicks(0, pmax)) {
+    g += `<line x1="${X(t)}" x2="${X(t)}" y1="${m.t}" y2="${H - m.b}" stroke="#efeee8"/>
+          <text x="${X(t)}" y="${H - m.b + 16}" text-anchor="middle">${t}</text>`;
+  }
+  g += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="#c3c2b7"/>`;
+  g += `<text x="${(m.l + W - m.r) / 2}" y="${H - 6}" text-anchor="middle">P (bar)</text>`;
+  g += `<text transform="translate(14 ${(m.t + H - m.b) / 2}) rotate(-90)" text-anchor="middle">${$("prop").selectedOptions[0].textContent}</text>`;
+  const ordered = [...series].sort((a, b) => (a.e === inp.eos) - (b.e === inp.eos));
+  for (const s of ordered) {
+    const d = s.pts.map(([x, y], i) => `${i ? "L" : "M"}${X(x).toFixed(1)},${Y(y).toFixed(1)}`).join("");
+    g += `<path d="${d}" fill="none" stroke="${COLORS[s.e]}" stroke-width="${s.e === inp.eos ? 3 : 1.6}" stroke-linejoin="round"/>`;
+  }
+  if (inp.P / 1e5 <= pmax) g += `<circle cx="${X(inp.P / 1e5)}" cy="${Y(cur)}" r="6" fill="#1b1b19" stroke="#fff" stroke-width="2"/>`;
+  g += `<line id="cross" y1="${m.t}" y2="${H - m.b}" stroke="#8a897f" stroke-dasharray="3 3" visibility="hidden"/>`;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = g;
+  chartData.geom = { m, W, H, X, pmax };
+}
+
+function hover(ev) {
+  if (!chartData || !chartData.geom) return;
+  const { m, W, X, pmax } = chartData.geom, svg = $("chart"), r = svg.getBoundingClientRect();
+  const px = ev.clientX - r.left, tip = $("tip"), cross = $("cross");
+  if (px < m.l || px > W - m.r) { tip.style.display = "none"; cross.setAttribute("visibility", "hidden"); return; }
+  const P = (px - m.l) / (W - m.l - m.r) * pmax;
+  let rows = `<b>P = ${P.toFixed(1)} bar</b>`;
+  for (const s of chartData.series) {
+    let best = s.pts[0];
+    for (const p of s.pts) if (Math.abs(p[0] - P) < Math.abs(best[0] - P)) best = p;
+    rows += `<br><span style="color:${COLORS[s.e]}">&#9632;</span> ${s.e}: ${best[1].toFixed(4)}`;
+  }
+  tip.innerHTML = rows; tip.style.display = "block";
+  tip.style.left = Math.min(px + 12, r.width - tip.offsetWidth - 4) + "px"; tip.style.top = "12px";
+  cross.setAttribute("x1", X(P)); cross.setAttribute("x2", X(P)); cross.setAttribute("visibility", "visible");
+}
+$("chart").addEventListener("mousemove", hover);
+$("chart").addEventListener("mouseleave", () => { $("tip").style.display = "none"; const c = $("cross"); if (c) c.setAttribute("visibility", "hidden"); });
+window.addEventListener("resize", renderChart);
+
+function findPsat() {
+  const gas = $("gas").value, T = parseFloat($("T").value), eos = $("eos").value;
+  try {
+    const { Psat, ZL, ZV } = saturationPressure(gas, T, eos);
+    $("psatOut").innerHTML = `<div class="msg ok">P<sup>sat</sup> = <b>${fmt(Psat / 1e5, 4)} bar</b> (${eos})<br>
+      Z<sub>L</sub> = ${fmt(ZL, 5)}, Z<sub>V</sub> = ${fmt(ZV, 5)}</div>`;
+  } catch (e) {
+    $("psatOut").innerHTML = `<div class="msg">${e.message === "T must be below Tc"
+      ? `No saturation pressure: T is above Tc (${getComponent(gas).Tc} K).` : e.message}</div>`;
+  }
+}
+
+$("calc").addEventListener("click", calculate);
+$("psatBtn").addEventListener("click", findPsat);
+$("gas").addEventListener("change", () => { showCrit(); $("psatOut").innerHTML = ""; calculate(); });
+for (const id of ["eos", "phase", "prop", "pmax"]) $(id).addEventListener("change", calculate);
+for (const id of ["T", "P"]) $(id).addEventListener("keydown", e => { if (e.key === "Enter") calculate(); });
+
+showCrit();
+calculate();
+</script>
+</body>
+</html>
