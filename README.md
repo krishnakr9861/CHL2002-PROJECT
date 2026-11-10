@@ -23,7 +23,10 @@ Built-in gases: methane, ethane, propane, n-butane, nitrogen, oxygen, carbon dio
 
 ## How to run
 
+The Python program is in the `python/` folder:
+
 ```bash
+cd python
 pip install -r requirements.txt
 
 python main.py                         # interactive menu
@@ -54,12 +57,13 @@ Example output (`python main.py methane 250 50 PR`):
 
 | File | Contents |
 |---|---|
-| `data.py` | Tc, Pc, ω and ideal-gas Cp coefficients (Smith, Van Ness & Abbott, App. B & C) |
-| `eos.py` | EOS parameters, cubic solver, H<sup>R</sup>, S<sup>R</sup>, ln φ, ideal-gas H and S, saturation pressure |
-| `main.py` | command-line / menu interface |
-| `validate.py` | compares Z, H<sup>R</sup>, S<sup>R</sup>, φ and P<sup>sat</sup> with CoolProp (NIST-quality reference EOS) |
-| `make_plots.py` | figures used in the report |
 | `index.html` | browser version of the calculator (the website) |
 | `report.pdf` | 4-page project report |
+| `python/data.py` | Tc, Pc, ω and ideal-gas Cp coefficients (Smith, Van Ness & Abbott, App. B & C) |
+| `python/eos.py` | EOS parameters, cubic solver, H<sup>R</sup>, S<sup>R</sup>, ln φ, ideal-gas H and S, saturation pressure |
+| `python/main.py` | command-line / menu interface |
+| `python/validate.py` | compares Z, H<sup>R</sup>, S<sup>R</sup>, φ and P<sup>sat</sup> with CoolProp (NIST-quality reference EOS) |
+| `python/make_plots.py` | figures used in the report |
+| `python/requirements.txt` | Python libraries needed |
 
 `main.py` needs only NumPy. CoolProp and Matplotlib are needed only for validation and plots.
