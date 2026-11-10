@@ -2,7 +2,7 @@
 
 Thermodynamics computer project (Prof. S.K. Gupta), IIT Delhi, 2026.
 
-**Submitted by:** Krishna Kumar (2025CH72107) · Tutorial Group 02
+**Submitted by:** Krishna Kumar (2025CH72107) Prisha Mahawar (2025CH12177)· Tutorial Group 02
 
 ## What it does
 
