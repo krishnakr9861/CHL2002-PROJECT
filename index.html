@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cubic EOS Calculator</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.theory'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false})"></script>
 <meta name="description" content="PVT, enthalpy, entropy and fugacity of real gases using vdW, RK, SRK and Peng-Robinson cubic equations of state.">
 <style>
   :root {
@@ -58,8 +62,19 @@
   .legend i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
   .tip { position: absolute; pointer-events: none; background: #1b1b19; color: #fff; font-size: 12px; padding: 6px 8px;
          border-radius: 6px; display: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  details { font-size: 14px; }
-  details summary { cursor: pointer; font-weight: 600; }
+  .theory { font-size: 15px; overflow: hidden; position: relative; }
+  .theory .katex-display, .theory .ptab td { position: relative; }
+  .theory h3 { font-size: 15px; margin: 22px 0 6px; display: flex; align-items: center; gap: 8px; }
+  .theory h3:first-of-type { margin-top: 4px; }
+  .theory p { margin: 6px 0; color: var(--ink); }
+  .step { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+          background: var(--accent); color: #fff; font-size: 12px; flex: none; }
+  .theory .katex-display { margin: 10px 0; padding: 10px 8px; background: #f7f6f2; border-radius: 8px;
+                           overflow-x: auto; overflow-y: hidden; }
+  .theory .katex { font-size: 1.08em; }
+  .ptab { margin: 8px 0; max-width: 640px; }
+  @media (max-width: 600px) { .theory .katex-display .katex { font-size: 0.92em; } }
+  .ptab td, .ptab th { text-align: center; }
   code { background: #f0efe9; padding: 1px 4px; border-radius: 4px; }
   footer { padding: 6px 16px 30px; font-size: 13px; color: var(--muted); }
   footer a { color: var(--accent); }
@@ -139,24 +154,47 @@
       <p class="note">Curves use the same gas and temperature as the inputs; the dot marks the current pressure.</p>
     </section>
 
-    <section class="card">
-      <details>
-        <summary>Equations used</summary>
-        <p>Generic cubic EOS: <code>P = RT/(V&minus;b) &minus; a(T)/[(V+&epsilon;b)(V+&sigma;b)]</code>,
-           with <code>a = &Psi;&alpha;(T<sub>r</sub>,&omega;)R&sup2;T<sub>c</sub>&sup2;/P<sub>c</sub></code>,
-           <code>b = &Omega;RT<sub>c</sub>/P<sub>c</sub></code>.</p>
-        <p>With <code>&beta; = bP/RT</code>, <code>q = a/(bRT)</code>:
-           <code>(Z&minus;&beta;)(Z+&epsilon;&beta;)(Z+&sigma;&beta;) &minus; (Z+&epsilon;&beta;)(Z+&sigma;&beta;) + q&beta;(Z&minus;&beta;) = 0</code>.
-           Real roots with Z &gt; &beta; are kept.</p>
-        <p><code>I = ln[(Z+&sigma;&beta;)/(Z+&epsilon;&beta;)]/(&sigma;&minus;&epsilon;)</code> (I = &beta;/Z for vdW)<br>
-           <code>H<sup>R</sup>/RT = Z &minus; 1 + (dln&alpha;/dlnT<sub>r</sub> &minus; 1)qI</code><br>
-           <code>S<sup>R</sup>/R = ln(Z&minus;&beta;) + (dln&alpha;/dlnT<sub>r</sub>)qI</code><br>
-           <code>ln&phi; = Z &minus; 1 &minus; ln(Z&minus;&beta;) &minus; qI</code>, &nbsp; <code>f = &phi;P</code></p>
-        <p><code>H = &int;C<sub>P</sub><sup>ig</sup>dT + H<sup>R</sup></code>, &nbsp;
-           <code>S = &int;(C<sub>P</sub><sup>ig</sup>/T)dT &minus; R ln(P/P<sub>0</sub>) + S<sup>R</sup></code>,
-           with <code>C<sub>P</sub><sup>ig</sup>/R = A + BT + CT&sup2; + DT<sup>&minus;2</sup></code> (Smith, Van Ness &amp; Abbott, App. C).</p>
-        <p>Saturation pressure: iterate <code>P &larr; P&middot;&phi;<sup>L</sup>/&phi;<sup>V</sup></code> until f<sup>L</sup> = f<sup>V</sup>.</p>
-      </details>
+    <section class="card theory">
+      <h2>Method and equations</h2>
+
+      <h3><span class="step">1</span>Generic cubic equation of state</h3>
+      <p>All four equations are special cases of one form:</p>
+      $$P=\frac{RT}{V-b}-\frac{a(T)}{(V+\varepsilon b)(V+\sigma b)},\qquad
+        a(T)=\Psi\,\frac{\alpha(T_r,\omega)\,R^2T_c^2}{P_c},\qquad b=\Omega\,\frac{RT_c}{P_c}$$
+      <div class="tablewrap"><table class="ptab">
+        <tr><th>EOS</th><th>\(\sigma\)</th><th>\(\varepsilon\)</th><th>\(\Omega\)</th><th>\(\Psi\)</th><th>\(\alpha(T_r)\)</th></tr>
+        <tr><td>vdW</td><td>0</td><td>0</td><td>1/8</td><td>27/64</td><td>\(1\)</td></tr>
+        <tr><td>RK</td><td>1</td><td>0</td><td>0.08664</td><td>0.42748</td><td>\(T_r^{-1/2}\)</td></tr>
+        <tr><td>SRK</td><td>1</td><td>0</td><td>0.08664</td><td>0.42748</td><td>\(\left[1+m\left(1-\sqrt{T_r}\right)\right]^2\)</td></tr>
+        <tr><td>PR</td><td>\(1+\sqrt2\)</td><td>\(1-\sqrt2\)</td><td>0.07780</td><td>0.45724</td><td>\(\left[1+\kappa\left(1-\sqrt{T_r}\right)\right]^2\)</td></tr>
+      </table></div>
+      $$m=0.480+1.574\,\omega-0.176\,\omega^2,\qquad \kappa=0.37464+1.54226\,\omega-0.26992\,\omega^2$$
+
+      <h3><span class="step">2</span>PVT: solving for \(Z\)</h3>
+      <p>With \(\beta=\dfrac{bP}{RT}\) and \(q=\dfrac{a}{bRT}\), substituting \(V=ZRT/P\) gives a cubic in \(Z\):</p>
+      $$(Z-\beta)(Z+\varepsilon\beta)(Z+\sigma\beta)-(Z+\varepsilon\beta)(Z+\sigma\beta)+q\beta\,(Z-\beta)=0$$
+      <p>For Peng&ndash;Robinson, with \(A=\dfrac{aP}{(RT)^2}\) and \(B=\beta\), this is</p>
+      $$Z^3-(1-B)Z^2+\left(A-3B^2-2B\right)Z-\left(AB-B^2-B^3\right)=0$$
+      <p>Only real roots with \(Z&gt;\beta\) are physical. The largest is the vapour root, the smallest the liquid root;
+         when both exist, the stable one has the lower fugacity. Then \(V=ZRT/P\).</p>
+
+      <h3><span class="step">3</span>Enthalpy and entropy (residual properties)</h3>
+      $$I=\frac{1}{\sigma-\varepsilon}\ln\frac{Z+\sigma\beta}{Z+\varepsilon\beta}\qquad\left(I=\frac{\beta}{Z}\ \text{for vdW}\right)$$
+      $$\frac{H^R}{RT}=Z-1+\left[\frac{d\ln\alpha}{d\ln T_r}-1\right]qI,\qquad
+        \frac{S^R}{R}=\ln(Z-\beta)+\frac{d\ln\alpha}{d\ln T_r}\,qI$$
+      <p>where \(\dfrac{d\ln\alpha}{d\ln T_r}=0\) (vdW), \(-\tfrac12\) (RK) and \(\dfrac{-m\sqrt{T_r}}{1+m\left(1-\sqrt{T_r}\right)}\) (SRK, PR).
+         Adding the ideal-gas part, with reference state ideal gas at \(T_0=298.15\) K, \(P_0=1\) bar:</p>
+      $$H=\int_{T_0}^{T}C_P^{ig}\,dT+H^R,\qquad
+        S=\int_{T_0}^{T}\frac{C_P^{ig}}{T}\,dT-R\ln\frac{P}{P_0}+S^R,\qquad
+        \frac{C_P^{ig}}{R}=A+BT+CT^2+\frac{D}{T^2}$$
+
+      <h3><span class="step">4</span>Pure-component fugacity</h3>
+      $$\ln\phi=\int_0^P (Z-1)\frac{dP}{P}=Z-1-\ln(Z-\beta)-qI,\qquad f=\phi P$$
+
+      <h3><span class="step">5</span>Saturation pressure</h3>
+      <p>Below \(T_c\), liquid and vapour are in equilibrium when \(f^L=f^V\). Starting from the Wilson estimate, the pressure is updated until the two fugacities agree:</p>
+      $$P_{\text{new}}=P\,\frac{\phi^L}{\phi^V}\qquad\text{until}\qquad\left|\frac{\phi^L}{\phi^V}-1\right|&lt;10^{-10}$$
+      <p class="note">Gas data (\(T_c\), \(P_c\), \(\omega\), \(C_P^{ig}\) coefficients): Smith, Van Ness &amp; Abbott, Appendices B and C.</p>
     </section>
   </div>
 </main>
