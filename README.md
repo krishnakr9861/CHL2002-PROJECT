@@ -17,6 +17,10 @@ For a pure gas at a given temperature and pressure, using the **van der Waals, R
 
 Built-in gases: methane, ethane, propane, n-butane, nitrogen, oxygen, carbon dioxide, ammonia, water.
 
+## Live website
+
+**https://krishnakr9861.github.io/CHL2002-PROJECT/**: the same calculator running in the browser (`index.html`, a JavaScript port of `eos.py` that gives identical results). Enter gas, T, P and EOS to get Z, V, H, S, φ and f, compare all four EOS, find the saturation pressure and plot isotherms.
+
 ## How to run
 
 ```bash
@@ -55,6 +59,7 @@ Example output (`python main.py methane 250 50 PR`):
 | `main.py` | command-line / menu interface |
 | `validate.py` | compares Z, H<sup>R</sup>, S<sup>R</sup>, φ and P<sup>sat</sup> with CoolProp (NIST-quality reference EOS) |
 | `make_plots.py` | figures used in the report |
+| `index.html` | browser version of the calculator (the website) |
 | `report.pdf` | 4-page project report |
 
 `main.py` needs only NumPy. CoolProp and Matplotlib are needed only for validation and plots.
