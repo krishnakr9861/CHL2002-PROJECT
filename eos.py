@@ -1,35 +1,3 @@
-"""
-Cubic equations of state for pure real gases.
-
-Generic two-parameter cubic EOS (Smith, Van Ness & Abbott form):
-
-        P = RT/(V - b) - a(T) / [(V + eps*b)(V + sig*b)]
-
-        a(T) = Psi * alpha(Tr, omega) * R^2 Tc^2 / Pc ,   b = Omega * R Tc / Pc
-
-    EOS   sig        eps        Omega     Psi       alpha(Tr)
-    vdW   0          0          1/8       27/64     1
-    RK    1          0          0.08664   0.42748   Tr^-0.5
-    SRK   1          0          0.08664   0.42748   [1 + m(1 - Tr^0.5)]^2, m = 0.480 + 1.574w - 0.176w^2
-    PR    1+sqrt2    1-sqrt2    0.07780   0.45724   [1 + k(1 - Tr^0.5)]^2, k = 0.37464 + 1.54226w - 0.26992w^2
-
-Dimensionless groups:   beta = bP/RT ,   q = a/(bRT)
-
-Cubic in Z (obtained by putting V = ZRT/P into the EOS):
-    (Z - beta)(Z + eps*beta)(Z + sig*beta) - (Z + eps*beta)(Z + sig*beta) + q*beta*(Z - beta) = 0
-
-Residual (departure) properties at (T, P), with
-    I = 1/(sig - eps) * ln[(Z + sig*beta)/(Z + eps*beta)]     (I = beta/Z for vdW, sig = eps)
-
-    H^R / RT = Z - 1 + [dln(alpha)/dln(Tr) - 1] * q * I
-    S^R / R  = ln(Z - beta) + [dln(alpha)/dln(Tr)] * q * I
-    ln(phi)  = Z - 1 - ln(Z - beta) - q * I
-
-Real-gas properties (reference state: ideal gas at T0 = 298.15 K, P0 = 1 bar, H = S = 0):
-    H(T,P) = integral(Cp_ig dT, T0..T) + H^R
-    S(T,P) = integral(Cp_ig/T dT, T0..T) - R ln(P/P0) + S^R
-"""
-
 import math
 import numpy as np
 
