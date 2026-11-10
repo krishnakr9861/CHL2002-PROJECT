@@ -17,7 +17,6 @@ T0 = 298.15     # K, reference temperature
 P0 = 1.0e5      # Pa, reference pressure
 
 
-# alpha(Tr) and its logarithmic temperature derivative
 def alpha_function(eos, Tr, omega):
     """Return alpha and dln(alpha)/dln(Tr)."""
     if eos == "vdW":
@@ -46,7 +45,7 @@ def eos_constants(comp, T, eos="PR"):
     return a, b, dlna
 
 
-# Solving the cubic for Z
+# Solving cubic for Z
 def z_roots(beta, q, eos):
     """All physically meaningful real roots (Z > beta) of the cubic, ascending."""
     sig, eps, _, _ = EOS_PARAMS[eos]
@@ -60,15 +59,6 @@ def z_roots(beta, q, eos):
 
 
 def solve_Z(T, P, comp, eos="PR", phase="auto"):
-    """
-    Compressibility factor at (T [K], P [Pa]).
-
-    phase = 'vapor'  -> largest root
-            'liquid' -> smallest root
-            'auto'   -> if three roots exist, the one with the lowest Gibbs
-                        energy (lowest ln phi), i.e. the stable phase.
-    Returns (Z, beta, q, dlnalpha, n_roots).
-    """
     a, b, dlna = eos_constants(comp, T, eos)
     beta = b * P / (R * T)
     q = a / (b * R * T)
@@ -110,7 +100,6 @@ def residual_properties(Z, beta, q, dlna, eos):
     return HR_RT, SR_R, lnphi
 
 
-# Ideal-gas contributions (SVNA Cp form)
 def ideal_gas_H(comp, T, Tref=T0):
     """H_ig(T) - H_ig(Tref) in J/mol."""
     A, B, C, D = comp["cp"]
@@ -132,15 +121,9 @@ def ideal_gas_Cp(comp, T):
     return R * (A + B * T + C * T ** 2 + D / T ** 2)
 
 
-# Everything at one state point
-def state(gas, T, P, eos="PR", phase="auto"):
-    """
-    Full property set for a pure component.
 
-    gas : component name (see data.py) or a component dict
-    T   : temperature, K
-    P   : pressure, Pa
-    """
+def state(gas, T, P, eos="PR", phase="auto"):
+
     comp = get_component(gas) if isinstance(gas, str) else gas
     Z, beta, q, dlna, nroots = solve_Z(T, P, comp, eos, phase)
     HR_RT, SR_R, lnphi = residual_properties(Z, beta, q, dlna, eos)
@@ -162,7 +145,6 @@ def state(gas, T, P, eos="PR", phase="auto"):
     }
 
 
-# Bonus: saturation pressure from equal fugacities (phi_L = phi_V)
 def saturation_pressure(gas, T, eos="PR", tol=1e-10, maxit=500):
     comp = get_component(gas) if isinstance(gas, str) else gas
     Tc, Pc, w = comp["Tc"], comp["Pc"], comp["omega"]
