@@ -1,11 +1,3 @@
-"""
-Cubic EOS calculator - PVT, enthalpy, entropy and fugacity of pure real gases.
-
-Run:
-    python main.py                      (interactive menu)
-    python main.py methane 250 50 PR    (gas, T in K, P in bar, EOS)
-"""
-
 import sys
 
 from data import COMPONENTS
