@@ -49,9 +49,7 @@ T0 = 298.15     # K, reference temperature
 P0 = 1.0e5      # Pa, reference pressure
 
 
-# ----------------------------------------------------------------------------
 # alpha(Tr) and its logarithmic temperature derivative
-# ----------------------------------------------------------------------------
 def alpha_function(eos, Tr, omega):
     """Return alpha and dln(alpha)/dln(Tr)."""
     if eos == "vdW":
@@ -80,9 +78,7 @@ def eos_constants(comp, T, eos="PR"):
     return a, b, dlna
 
 
-# ----------------------------------------------------------------------------
 # Solving the cubic for Z
-# ----------------------------------------------------------------------------
 def z_roots(beta, q, eos):
     """All physically meaningful real roots (Z > beta) of the cubic, ascending."""
     sig, eps, _, _ = EOS_PARAMS[eos]
@@ -124,9 +120,8 @@ def solve_Z(T, P, comp, eos="PR", phase="auto"):
     return Z, beta, q, dlna, len(roots)
 
 
-# ----------------------------------------------------------------------------
 # Residual properties and fugacity
-# ----------------------------------------------------------------------------
+
 def I_integral(Z, beta, eos):
     sig, eps, _, _ = EOS_PARAMS[eos]
     if sig == eps:                       # van der Waals
@@ -147,9 +142,7 @@ def residual_properties(Z, beta, q, dlna, eos):
     return HR_RT, SR_R, lnphi
 
 
-# ----------------------------------------------------------------------------
 # Ideal-gas contributions (SVNA Cp form)
-# ----------------------------------------------------------------------------
 def ideal_gas_H(comp, T, Tref=T0):
     """H_ig(T) - H_ig(Tref) in J/mol."""
     A, B, C, D = comp["cp"]
@@ -171,9 +164,7 @@ def ideal_gas_Cp(comp, T):
     return R * (A + B * T + C * T ** 2 + D / T ** 2)
 
 
-# ----------------------------------------------------------------------------
 # Everything at one state point
-# ----------------------------------------------------------------------------
 def state(gas, T, P, eos="PR", phase="auto"):
     """
     Full property set for a pure component.
@@ -203,9 +194,7 @@ def state(gas, T, P, eos="PR", phase="auto"):
     }
 
 
-# ----------------------------------------------------------------------------
 # Bonus: saturation pressure from equal fugacities (phi_L = phi_V)
-# ----------------------------------------------------------------------------
 def saturation_pressure(gas, T, eos="PR", tol=1e-10, maxit=500):
     comp = get_component(gas) if isinstance(gas, str) else gas
     Tc, Pc, w = comp["Tc"], comp["Pc"], comp["omega"]
