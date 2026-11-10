@@ -1,8 +1,3 @@
-"""
-Figures for the report. Needs matplotlib; reference points need CoolProp.
-Saves figures/properties.png and figures/isotherms.png.
-"""
-
 import os
 
 import matplotlib
