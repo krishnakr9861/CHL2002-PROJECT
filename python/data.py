@@ -1,10 +1,4 @@
 """
-Pure-component data used by the program.
-
-Critical constants (Tc, Pc, omega) and ideal-gas heat-capacity coefficients
-are taken from Smith, Van Ness & Abbott, "Introduction to Chemical
-Engineering Thermodynamics", Appendix B (Table B.1) and Appendix C (Table C.1).
-
 Ideal-gas heat capacity form (SVNA Table C.1):
     Cp_ig / R = A + B*T + C*T**2 + D*T**-2        (T in K)
 """
